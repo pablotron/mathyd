@@ -1,0 +1,56 @@
+% Cross Product via Matrix Determinant
+\begin{align*}
+    \vec{a} \times \vec{b} & = \begin{vmatrix}
+        \hat{i} & \hat{j} & \hat{k} \\
+        \vec{a}_x & \vec{a}_y & \vec{a}_z \\
+        \vec{b}_x & \vec{b}_y & \vec{b}_z 
+    \end{vmatrix} \\
+    
+    & = 
+    \begin{vmatrix}
+        \vec{a}_y & \vec{a}_z \\
+        \vec{b}_y & \vec{b}_z
+    \end{vmatrix} \hat{i} - 
+    
+    \begin{vmatrix}
+        \vec{a}_x & \vec{a}_z \\
+        \vec{b}_x & \vec{b}_z
+    \end{vmatrix} \hat{j} +
+    
+    \begin{vmatrix}
+        \vec{a}_x & \vec{a}_y \\
+        \vec{b}_x & \vec{b}_y
+    \end{vmatrix} \hat{k} \\
+    
+    & = 
+    (\vec{a}_y\vec{b}_z - \vec{a}_z\vec{b}_y)\hat{i} -
+    (\vec{a}_x\vec{b}_z - \vec{a}_z\vec{b}_x)\hat{j} +
+    (\vec{a}_x\vec{b}_y - \vec{a}_x\vec{b}_y)\hat{k} \\
+    
+    & =
+    \langle
+        \vec{a}_y\vec{b}_z - \vec{a}_z\vec{b}_y\text{, } 
+        \vec{a}_x\vec{b}_z - \vec{a}_z\vec{b}_x\text{, } 
+        \vec{a}_x\vec{b}_y - \vec{a}_y\vec{b}_z
+    \rangle \\
+    
+    \vec{a} & = \langle2, 1, -1\rangle \\
+    \vec{b} & = \langle-3, 4, 1\rangle \\
+    \vec{a} \times \vec{b} & = \langle
+        (1)(1) - (-1)(4),
+        (2)(1) - (-1)(-3),
+        (2)(4) - (1)(-3)
+    \rangle \\
+    
+    & = \langle
+        5, 5, 11
+    \rangle \\
+    \vec{b} \times \vec{a} & = \langle
+        (4)(-1) - (1)(1),
+        (-3)(-1) - (1)(2),
+        (-3)(1) - (4)(2)
+    \rangle \\
+    & = \langle
+        -5, -5, -11
+    \rangle
+\end{align*}
