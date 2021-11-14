@@ -11,10 +11,14 @@
 #
 # Example:
 #
-#   # assuming mathyd is running on whatever.example.com:3000
+#   # set hmac key and mathyd url
+#   # (mathyd is running on whatever.example.com:3000, see top-level
+#   # README.md)
 #   export MATHYD_HMAC_KEY=secret
 #   export MATHYD_URL='http://whatever.example.com:3000/'
-#   echo "{\"type\":\"svg\",\"tex\":\"x = \\\\sin \\\\left( \\\\frac{\\\\pi_{-1}^{2\\\\pi}}{3.1415} \\\\right)\"}" | ruby bin/mathy
+#
+#   # send cross-product.tex and write svg to ./cross-product.svg
+#   bin/mathy < examples/cross-product.tex > cross-product.svg
 #
 
 # load libraries
@@ -23,28 +27,35 @@ require 'json'
 require 'openssl'
 require 'uri'
 
-# read key and URI from env
+# read key and URL from env, parse URL
 key = ENV.fetch('MATHYD_HMAC_KEY')
 uri = URI.parse(ENV.fetch('MATHYD_URL'))
 
-# read tex from stdin, build body, calculate hex digest
+# read tex from stdin, build body, calculate hmac
 body = JSON({ type: 'svg', tex: STDIN.read })
 hmac = OpenSSL::HMAC.hexdigest('sha256', key, body)
 
-# build 
+# build request
 http = Net::HTTP.new(uri.host, uri.port)
 req = Net::HTTP::Put.new(uri.request_uri)
+
+# set headers and body
+# (note: both of these headers are *required*)
 req['content-type'] = 'application/json'
 req['x-mathyd-hmac-sha256'] = hmac
 req.body = body
 
-# send request, get response
+# send request
 res = http.request(req)
+
+# check response
 case res
 when Net::HTTPSuccess
   # parse data, write svg to stdout
   data = JSON(res.body)
   puts data['svg']
 else
+  # print error, exit with failure
   warn "Error: #{res.body}"
+  exit -1
 end
