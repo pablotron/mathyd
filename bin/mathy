@@ -40,7 +40,11 @@ req.body = body
 
 # send request, get response
 res = http.request(req)
-
-# parse data, write svg to stdout
-data = JSON(res.body)
-puts data['svg']
+case res
+when Net::HTTPSuccess
+  # parse data, write svg to stdout
+  data = JSON(res.body)
+  puts data['svg']
+else
+  warn "Error: #{res.message}"
+end
