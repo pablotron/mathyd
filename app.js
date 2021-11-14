@@ -22,6 +22,7 @@ const crypto = require('crypto');
 const express = require('express');
 const app = express();
 
+// body handler
 app.use(express.text({
   type: 'application/json',
   verify: (req, res, buf, enc) => {
@@ -41,12 +42,13 @@ app.use(express.text({
   },
 }));
 
-// const hex = crypto.createHmac('sha256', 'some key')
-//   .update('foobar')
-//   .digest('hex');
-//   
-// console.log('hmac = ' + hex);
+// error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.set({ 'Content-Type': 'text/plain' }).status(500).send(err)
+});
 
+// load mathjax
 require('mathjax-full').init({
   // mathjax config
   options: {
