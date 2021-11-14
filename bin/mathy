@@ -46,5 +46,5 @@ when Net::HTTPSuccess
   data = JSON(res.body)
   puts data['svg']
 else
-  warn "Error: #{res.message}"
+  warn "Error: #{res.body}"
 end
