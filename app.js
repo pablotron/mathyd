@@ -1,14 +1,32 @@
-// to run: node -r esm app.js
-// to test: curl -XPUT -d '{}' -H 'Content-Type: application/json' -H 'x-mathyd-hmac-sha256: 77325902caca812dc259733aacd046b73817372c777b8d95b402647474516e13' http://meh.wg:3000
 //
-// >> OpenSSL::HMAC.hexdigest('sha256', 'secret', '{}')
-// => "77325902caca812dc259733aacd046b73817372c777b8d95b402647474516e13"
+// app.js - HTTP server which accepts PUT requests and uses mathjax to
+// render the provided TeX as SVG via MathJax.
 //
-// >> OpenSSL::HMAC.hexdigest('sha256', 'secret', "{\"type\":\"svg\",\"tex\":\"x = \\\\sin \\\\left( \\\\frac{\\\\pi_{-1}^{2\\\\pi}}{3.1415} \\\\right)\"}")
-// => "37b485e7ba3b9d764012118aeca66965a045fab1623abff280f6da033f7efbac"
+// The SHA-256 HMAC of the request body should be hex-encoded and sent
+// as the `x-mathyd-hmac-sha256` header.
 //
-// curl -XPUT -d "{\"type\":\"svg\",\"tex\":\"x = \\\\sin \\\\left( \\\\frac{\\\\pi_{-1}^{2\\\\pi}}{3.1415} \\\\right)\"}" -H 'Content-Type: application/json' -H 'x-mathyd-hmac-sha256: 37b485e7ba3b9d764012118aeca66965a045fab1623abff280f6da033f7efbac' http://meh.wg:3000/
-
+// The body of the request should be a JSON object with the following
+// properties:
+//
+// * type: Output format. Must have the value of "svg".  Required.
+// * tex: String containing TeX data.  Required.
+//
+// On success, returns a JSON object in the response body with the
+// following properties:
+//
+// * svg: SVG contents
+//
+// On error, returns an error code and a JSON-encoded error in the body
+// of the response.
+//
+// Configuration is managed with the following environment variables:
+//
+// * MATHYD_PORT: Port.  Optional, defaults to "3000" if unspecified.
+// * MATHYD_HMAC_KEY: HMAC key.  Required.
+// * MATHYD_MATHJAX_PACKAGES: Comma-delimited list of MathJax packages.
+//   Optional, defaults to `base, autoload, require, ams, newcommand` if
+//   unspecified.
+//
 
 "use strict";
 
@@ -50,6 +68,79 @@ app.use((err, req, res, next) => {
   });
 });
 
+const HELP_HTML = `
+<!DOCTYPE html>
+<html>
+  <head><title>mathyd</title></head>
+  <body>
+    <h1>mathyd</h1>
+
+    <p>
+      HTTP server which accepts PUT requests and uses mathjax to render
+      the provided TeX as SVG via MathJax.
+    </p>
+
+    <p>
+      The SHA-256 HMAC of the request body should be hex-encoded and sent
+      as the <code>x-mathyd-hmac-sha256</code> header.
+    </p>
+
+    <p>
+      The body of the request should be a JSON object with the following
+      properties:
+    </p>
+
+    <ul>
+      <li>
+        <b>type</b>: Output format. Must have the value of "svg".
+        Required.
+      </li>
+
+      <li>
+        <b>tex</b>: String containing TeX data.  Required.
+      </li>
+    </ul>
+
+    <p>
+      On success, returns a JSON object in the response body with the
+      following properties:
+    </p>
+
+    <ul>
+      <li>
+        <b>svg</b>: SVG contents.
+      </li>
+    </ul>
+
+    <p>
+      On error, returns an error code and a JSON-encoded error in the
+      body of the response.
+    </p>
+
+    <p>
+      Configuration is managed with the following environment variables:
+    </p>
+
+    <ul>
+      <li>
+        <b>MATHYD_PORT</b>: Port.  Optional, defaults to "3000" if
+        unspecified.
+      </li>
+
+      <li>
+        <b>MATHYD_HMAC_KEY</b>: HMAC key.  Required.
+      </li>
+
+      <li>
+        <b>MATHYD_MATHJAX_PACKAGES</b>: Comma-delimited list of MathJax
+        packages. Optional, defaults to <code>base, autoload, require, ams, newcommand</code>
+        if unspecified.
+      </li>
+    </ul>
+  </body>
+</html>
+`;
+
 // load mathjax
 require('mathjax-full').init({
   // mathjax config
@@ -76,7 +167,7 @@ require('mathjax-full').init({
 }).then((MathJax) => {
   // bind to get
   app.get('/', (req, res) => {
-    res.send('Usage: PUT / with a JSON body');
+    res.send(HELP_HTML);
   });
 
   app.put('/', (req, res) => {
