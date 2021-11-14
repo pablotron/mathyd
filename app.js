@@ -44,8 +44,10 @@ app.use(express.text({
 
 // error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.set({ 'Content-Type': 'text/plain' }).status(500).send(err)
+  console.error(err.stack);
+  res.set({ 'Content-Type': 'application/json' }).status(500).send({
+    error: err.message,
+  });
 });
 
 // load mathjax
