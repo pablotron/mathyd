@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+#
+# mathy: Read TeX from standard input, HMAC and send it to mathyd 
+# instance, and then print the generated SVG to standard output.
+#
+# The following environment variables are required:
+#
+# * MATHYD_HMAC_KEY: HMAC key.
+# * MATHYD_URL: URL to mathyd instance.
+#
+# Example:
+#
+#   # assuming mathyd is running on whatever.example.com:3000
+#   export MATHYD_HMAC_KEY=secret
+#   export MATHYD_URL='http://whatever.example.com:3000/'
+#   echo "{\"type\":\"svg\",\"tex\":\"x = \\\\sin \\\\left( \\\\frac{\\\\pi_{-1}^{2\\\\pi}}{3.1415} \\\\right)\"}" | ruby bin/mathy
+#
+
+# load libraries
+require 'net/http'
+require 'json'
+require 'openssl'
+require 'uri'
+
+# read key and URI from env
+key = ENV.fetch('MATHYD_HMAC_KEY')
+uri = URI.parse(ENV.fetch('MATHYD_URL'))
+
+# read tex from stdin, build body, calculate hex digest
+body = JSON({ type: 'svg', tex: STDIN.read })
+hmac = OpenSSL::HMAC.hexdigest('sha256', key, body)
+
+# build 
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.request_uri)
+req['content-type'] = 'application/json'
+req['x-mathyd-hmac-sha256'] = hmac
+req.body = body
+
+# send request, get response
+res = http.request(req)
+
+# parse data, write svg to stdout
+data = JSON(res.body)
+puts data['svg']
