@@ -5,7 +5,7 @@ FROM node
 
 ENV LANG en_US.utf8
 WORKDIR /app
-COPY app.js package.json package-lock.json /app/
+COPY README.md app.js package.json package-lock.json /app/
 
 # old debian comman
 # RUN apt-get update && apt-get install -y locales nodejs npm && \
