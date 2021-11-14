@@ -33,11 +33,11 @@ app.use(express.text({
 
     // check hmac key
     if (!HMAC_KEY) {
-      throw 'hmac key not set';
+      throw new Error('hmac key not set');
     }
 
     if (header_hmac !== body_hmac) {
-      throw 'hmac mismatch';
+      throw new Error('hmac mismatch');
     }
   },
 }));
@@ -74,7 +74,7 @@ require('mathjax-full').init({
 }).then((MathJax) => {
   // bind to get
   app.get('/', (req, res) => {
-    res.send('Usage: PUT / with a JSON body')
+    res.send('Usage: PUT / with a JSON body');
   });
 
   app.put('/', (req, res) => {
@@ -109,7 +109,7 @@ require('mathjax-full').init({
       }));
     }).catch((err) => {
       console.log(err);
-      res.status(403).send(err).end();
+      res.status(500).send(err).end();
       return;
     });
   });
